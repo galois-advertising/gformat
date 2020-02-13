@@ -6,6 +6,7 @@
 
 namespace galois::format {
 
+const uint16_t MAGIC_NUMBER = 0xf83f;
 // no virtual method
 struct pack_header_t {
     uint16_t magic_number;
@@ -19,7 +20,7 @@ struct pack_header_t {
 
     uint32_t heart_beat : 1;
     uint32_t op_type : 2;
-    uint32_t schema_change_flag : 1;
+    uint32_t change_flag : 1;
     uint32_t reserve2 : 28;
     uint64_t time_stamp;
     uint64_t eventid;
@@ -36,7 +37,7 @@ struct pack_header_t {
             extend(0),
             heart_beat(0),
             op_type(0),
-            schema_change_flag(0),
+            change_flag(0),
             reserve2(0),
             time_stamp(0),
             eventid(0),
@@ -44,7 +45,6 @@ struct pack_header_t {
             reserve3(0) {}
 };
 
-const uint16_t MAGIC_NUMBER = 0x1202;
 const uint16_t BASE_HEADER_LENGTH = 12;
 const uint16_t EXTEND_HEADER_LENGTH = sizeof(pack_header_t);
 

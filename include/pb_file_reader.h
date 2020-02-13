@@ -10,7 +10,7 @@ class pb_file_reader {
 public:
     pb_file_reader();
     virtual ~pb_file_reader() {}
-    virtual int read_record(header_t& header, void* body_buf, uint32_t body_buf_len, FILE* protobuf_fp) = 0;
+    virtual error_t read_record(header_t& header, void* body_buf, uint32_t body_buf_len, FILE* protobuf_fp) = 0;
 protected:
     virtual error_t read_header(header_t& header, FILE* protobuf_fp);
     virtual error_t read_basic_header(header_t& header, FILE* protobuf_fp);
