@@ -1,9 +1,6 @@
 //solopointer1202@gmail.com
 #include <string.h>
 #include <new>
-#include "format.h"
-#include "pack_header.h"
-#include "pb_file_reader.h"
 #include "checksum.h"
 #include "log.h"
 
@@ -26,41 +23,40 @@ int64_t pb_file_reader<header_t>::magic_number_pos() const {
 }
 
 template<typename header_t>
-error_t pb_file_reader<header_t>::read_header(header_t& header, FILE* protobuf_fp) {
-    if (auto res = read_basic_header(header, protobuf_fp); res != error_t::SUCCESS) {
+error_t pb_file_reader<header_t>::read_header(header_t& header, FILE* fp) {
+    if (auto res = read_basic_header(header, fp); res != error_t::SUCCESS) {
         return res;
     }
-    if (auto res = read_extend_segments(header, protobuf_fp); res != error_t::SUCCESS) {
+    if (auto res = read_extend_segments(header, fp); res != error_t::SUCCESS) {
         return res;
     }
     return error_t::SUCCESS;
 }
 
 template<typename header_t>
-error_t pb_file_reader<header_t>::read_basic_header(header_t& header, FILE* protobuf_fp) {
-    if (protobuf_fp == nullptr) {
-        FATAL("protobuf_fp is nullptr.", "");
+error_t pb_file_reader<header_t>::read_basic_header(header_t& header, FILE* fp) {
+    if (fp == nullptr) {
+        FATAL("fp is nullptr.", "");
         return error_t::ERROR;
     }
 
-    if ((_magic_pos = ftell(protobuf_fp)) == -1) {
+    if ((_magic_pos = ftell(fp)) == -1) {
         FATAL("failed to get magicpos.", "");
         return error_t::ERROR;
     }
 
-    uint32_t magic_number_len = sizeof(MAGIC_NUMBER);
-    uint32_t read_len = fread(&header, 1, magic_number_len, protobuf_fp);
+    uint32_t read_len = fread(&header, 1, sizeof(typename header_t::magic_t), fp);
 
-    if (read_len < magic_number_len) {
-        if (ferror(protobuf_fp) != 0) {
+    if (read_len < sizeof(typename header_t::magic_t)) {
+        if (ferror(fp) != 0) {
             FATAL("failed to read magic [%ld].", _magic_pos);
             return error_t::ERROR;
         }
         
-        if (feof(protobuf_fp) != 0) {
+        if (feof(fp) != 0) {
             if (read_len > 0) {
                 DEBUG("Reach EOF [%u][%u][%ld].",
-                    read_len, magic_number_len, _magic_pos);
+                    read_len, sizeof(typename header_t::magic_t), _magic_pos);
                 return error_t::DATA_INCOMPLETE;
             }
             DEBUG("Reach EOF.", "");
@@ -71,23 +67,23 @@ error_t pb_file_reader<header_t>::read_basic_header(header_t& header, FILE* prot
     }
 
     uint16_t magic_number = header.magic_number;
-    if (magic_number != MAGIC_NUMBER) {
+    if (magic_number != header_t::MAGIC_NUMBER) {
         if (_last_magic_check) {
-            FATAL("magic != MAGIC [%x][%x][%ld].", magic_number, MAGIC_NUMBER, _magic_pos);
+            FATAL("magic != MAGIC [%x][%x][%ld].", magic_number, header_t::MAGIC_NUMBER, _magic_pos);
             _last_magic_check = false;
         }
         return error_t::MAGIC_ERROR;
     }
     _last_magic_check = true;
-    uint32_t remain_len = BASE_HEADER_LENGTH - magic_number_len;
-    read_len = fread(((char*)&header) + magic_number_len, 1, remain_len, protobuf_fp);
+    uint32_t remain_len = header_t::BASE_HEADER_LENGTH - sizeof(typename header_t::magic_t);
+    read_len = fread(((char*)&header) + sizeof(typename header_t::magic_t), 1, remain_len, fp);
     if (read_len < remain_len) {
-        if (ferror(protobuf_fp) != 0) {
+        if (ferror(fp) != 0) {
             FATAL("failed to read base header [%ld].", _magic_pos);
             return error_t::ERROR;
         }
         
-        if (feof(protobuf_fp) != 0) {
+        if (feof(fp) != 0) {
             DEBUG("Reach EOF when read base header[%d][%ld].", read_len, _magic_pos);
             return error_t::DATA_INCOMPLETE;
         }
@@ -100,9 +96,9 @@ error_t pb_file_reader<header_t>::read_basic_header(header_t& header, FILE* prot
 template<typename header_t>
 error_t pb_file_reader<header_t>::read_extend_segments(
         header_t& header,
-        FILE* protobuf_fp) {
-    if (protobuf_fp == nullptr) {
-        FATAL("protobuf_fp is nullptr.");
+        FILE* fp) {
+    if (fp == nullptr) {
+        FATAL("fp is nullptr.", "");
         return error_t::ERROR;
     }
     
@@ -110,14 +106,14 @@ error_t pb_file_reader<header_t>::read_extend_segments(
         return error_t::SUCCESS;
     }
 
-    uint32_t remain_len = EXTEND_HEADER_LENGTH - BASE_HEADER_LENGTH;
-    uint32_t read_len = fread(((char*)&header) + BASE_HEADER_LENGTH, 1, remain_len, protobuf_fp);
+    uint32_t remain_len = sizeof(header_t) - header_t::BASE_HEADER_LENGTH;
+    uint32_t read_len = fread(((char*)&header) + header_t::BASE_HEADER_LENGTH, 1, remain_len, fp);
     if (read_len < remain_len) {
-        if (ferror(protobuf_fp) != 0) {
+        if (ferror(fp) != 0) {
             FATAL("failed to read extend[%ld].", _magic_pos);
             return error_t::ERROR;
         }
-        if (feof(protobuf_fp) != 0) {
+        if (feof(fp) != 0) {
             DEBUG("reach eof when read extend[%d][%ld].", read_len, _magic_pos);
             return  error_t::DATA_INCOMPLETE;
         }
@@ -131,14 +127,14 @@ error_t pb_file_reader<header_t>::read_extend_segments(
 template<typename header_t>
 error_t pb_file_reader<header_t>::read_body(
     const header_t& header, void* body_buf, 
-    uint32_t body_buf_len, FILE* protobuf_fp) {
-    if (protobuf_fp == nullptr) {
-        FATAL("protobuf_fp is nullptr.");
+    uint32_t body_buf_len, FILE* fp) {
+    if (fp == nullptr) {
+        FATAL("fp is nullptr.", "");
         return error_t::ERROR;
     }
 
     if (body_buf == nullptr) {
-        FATAL("body_buf is nullptr.");
+        FATAL("body_buf is nullptr.", "");
         return error_t::ERROR;
     }
 
@@ -149,13 +145,13 @@ error_t pb_file_reader<header_t>::read_body(
         return error_t::RECORD_TOO_BIG;
     }
 
-    uint32_t read_len = fread(body_buf, 1u, body_len, protobuf_fp);
+    uint32_t read_len = fread(body_buf, 1u, body_len, fp);
     if (read_len < body_len) {
-        if (ferror(protobuf_fp) != 0) {
+        if (ferror(fp) != 0) {
             FATAL("failed to read body[%ld].", _magic_pos);
             return error_t::ERROR;
         }
-        if (feof(protobuf_fp) != 0) {
+        if (feof(fp) != 0) {
             DEBUG("reach eof when read body[%d][%ld].", read_len, _magic_pos);
             return error_t::DATA_INCOMPLETE;
         }
@@ -165,7 +161,7 @@ error_t pb_file_reader<header_t>::read_body(
     uint16_t body_sign = 0;
     int ret = checksum(body_buf, body_len, body_sign);
     if (ret != 0) {
-        FATAL("failed to checksum.");
+        FATAL("failed to checksum.", "");
         return error_t::ERROR;
     }
     if (body_sign != header.checksum) {

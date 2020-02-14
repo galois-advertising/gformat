@@ -4,11 +4,11 @@
 #include <string>
 #include "log.h"
 #include "pb_buffer_reader.h"
-#include "pb_file_writer.h"
+#include "pb_fixed_file_reader.h"
 
 using namespace galois::format;
 
-int test_read_write(std::string infile_name, std::string outfile_name)
+int test_read_buffer(std::string infile_name, std::string outfile_name)
 {
     std::shared_ptr<FILE> infile(fopen(infile_name.c_str(), "r"), [](FILE* f){if(f)fclose(f);});
     if (infile == nullptr) {
@@ -37,7 +37,6 @@ int test_read_write(std::string infile_name, std::string outfile_name)
     WARNING("read %d bytes from infile.", read_len);
 
     pb_buffer_reader<pack_header_t> protobuf_reader;
-    pb_file_writer<pack_header_t> protobuf_writer;
     pack_header_t header;
 
     char* body_pos = nullptr;
@@ -45,35 +44,72 @@ int test_read_write(std::string infile_name, std::string outfile_name)
     while (1) {
         auto rc = protobuf_reader.read_record(header, &body_pos, 
             buffer.get(), read_len);
-        if (rc != error_t::SUCCESS) {
-            WARNING("read one record failed.", "");
-            ret = -1;
-            break;
-        } else if (rc == error_t::REACH_EOF) {
+        if (rc == error_t::REACH_EOF) {
             WARNING("read over.", "");
             ret = 0;
             break;
+        } else if (rc == error_t::SUCCESS) {
+            std::cout<<"magic_number:"<<header.magic_number
+                <<" checksum:"<<header.checksum
+                <<" pack_len:"<<header.pack_len
+                <<" level:"<<header.level
+                <<" extend:"<<header.extend
+                <<" op_type:"<<header.op_type
+                <<" time_stamp:"<<header.time_stamp
+                <<" eventid:"<<header.eventid<<std::endl;
         } else {
-            std::cout<<"magic_number:"<<header.magic_number<<std::endl;
-            std::cout<<"checksum:"<<header.checksum<<std::endl;
-            std::cout<<"pack_len:"<<header.pack_len<<std::endl;
-            std::cout<<"source:"<<header.source<<std::endl;
-            std::cout<<"level:"<<header.level<<std::endl;
-            std::cout<<"reserve1:"<<header.reserve1<<std::endl;
-            std::cout<<"extend:"<<header.extend<<std::endl;
-            std::cout<<"heart_beat:"<<header.heart_beat<<std::endl;
-            std::cout<<"op_type:"<<header.op_type<<std::endl;
-            std::cout<<"change_flag:"<<header.change_flag<<std::endl;
-            std::cout<<"reserve2:"<<header.reserve2<<std::endl;
-            std::cout<<"time_stamp:"<<header.time_stamp<<std::endl;
-            std::cout<<"eventid:"<<header.eventid<<std::endl;
-            std::cout<<"key_id:"<<header.key_id<<std::endl;
-            std::cout<<"reserve3:"<<header.reserve3<<std::endl;
-            if (protobuf_writer.write_record(header, body_pos, header.pack_len, outfile.get()) != error_t::SUCCESS) {
-                FATAL("write one record to file failed.", "");
-                ret = -1;
-                break;
-            }
+            ERROR("Error:[%d]", static_cast<int>(rc));
+            break;
+        }
+    }
+    return ret;
+}
+
+int test_read_file(std::string infile_name, std::string outfile_name)
+{
+    std::shared_ptr<FILE> infile(fopen(infile_name.c_str(), "r"), [](FILE* f){if(f)fclose(f);});
+    if (infile == nullptr) {
+        FATAL("open file[%s] failed.", infile_name.c_str());
+        return -1;
+    }
+    std::shared_ptr<FILE> outfile(fopen(outfile_name.c_str(), "r"), [](FILE* f){if(f)fclose(f);});
+    if (infile == nullptr) {
+        FATAL("open file[%s] failed.", infile_name.c_str());
+        return -1;
+    }
+
+    const size_t BUF_SIZE = 1024 * 1024;
+    std::shared_ptr<char> buffer(new(std::nothrow) char[BUF_SIZE], 
+        [](char* p){if(p)delete[]p;});
+    if (buffer == nullptr) {
+        FATAL("malloc buffer failed.", "");
+        return -1;
+    }
+
+
+    pb_fixed_file_reader<pack_header_t> protobuf_reader;
+    pack_header_t header;
+
+    char* body_pos = nullptr;
+    int ret = 0;
+    while (1) {
+        auto rc = protobuf_reader.read_record(header, buffer.get(), BUF_SIZE, infile.get());
+        if (rc == error_t::REACH_EOF) {
+            WARNING("Reach EOF.", "");
+            ret = 0;
+            break;
+        } else if (rc == error_t::SUCCESS) {
+            std::cout<<"magic_number:"<<header.magic_number
+                <<" checksum:"<<header.checksum
+                <<" pack_len:"<<header.pack_len
+                <<" level:"<<header.level
+                <<" extend:"<<header.extend
+                <<" op_type:"<<header.op_type
+                <<" time_stamp:"<<header.time_stamp
+                <<" eventid:"<<header.eventid<<std::endl;
+        } else {
+            ERROR("Error:[%d]", static_cast<int>(rc));
+            break;
         }
     }
     return ret;
@@ -87,5 +123,6 @@ int main(int argc, char ** argv) {
     }
     std::cout<<argv[1]<<std::endl;
     std::cout<<argv[2]<<std::endl;
-    test_read_write(argv[1], argv[2]);
+    //test_read_buffer(argv[1], argv[2]);
+    test_read_file(argv[1], argv[2]);
 }

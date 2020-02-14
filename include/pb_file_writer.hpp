@@ -1,6 +1,4 @@
-
-#include "pack_header.h"
-#include "pb_file_writer.h"
+//solopointer1202@gmail.com
 #include "checksum.h"
 #include "log.h"
 
@@ -32,20 +30,20 @@ error_t pb_file_writer<header_t>::write_header(
         return error_t::ERROR;
     }
 
-    header.magic_number = MAGIC_NUMBER;
+    header.magic_number = header_t::MAGIC_NUMBER;
     header.pack_len = body_len;
 
-    uint32_t write_len = fwrite(&header, 1, BASE_HEADER_LENGTH, fp);
-    if (write_len != BASE_HEADER_LENGTH) {
+    uint32_t write_len = fwrite(&header, 1, header_t::BASE_HEADER_LENGTH, fp);
+    if (write_len != header_t::BASE_HEADER_LENGTH) {
         FATAL("failed to write base header[%d].", write_len);
         return error_t::ERROR;
     }
 
     if (header.extend == 1) {
         write_len = fwrite(
-            ((char*)&header) + BASE_HEADER_LENGTH, 1,
-            EXTEND_HEADER_LENGTH - BASE_HEADER_LENGTH, fp);
-        if (write_len != EXTEND_HEADER_LENGTH - BASE_HEADER_LENGTH) {
+            ((char*)&header) + header_t::BASE_HEADER_LENGTH, 1,
+            sizeof(header_t) - header_t::BASE_HEADER_LENGTH, fp);
+        if (write_len != sizeof(header_t) - header_t::BASE_HEADER_LENGTH) {
             FATAL("failed to write extend segments[%d].", write_len);
             return error_t::ERROR;
         }

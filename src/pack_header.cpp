@@ -6,7 +6,7 @@
 namespace galois::format {
 
 uint16_t get_header_len(const pack_header_t& header) {
-    return header.extend == 0 ? BASE_HEADER_LENGTH : EXTEND_HEADER_LENGTH;
+    return header.extend == 0 ? pack_header_t::BASE_HEADER_LENGTH : sizeof(pack_header_t);
 }
 
 error_t write_header(const pack_header_t& header, char* buffer, uint32_t buffer_len) {

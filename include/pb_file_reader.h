@@ -9,13 +9,13 @@ template<typename header_t>
 class pb_file_reader {
 public:
     pb_file_reader();
-    virtual ~pb_file_reader() {}
-    virtual error_t read_record(header_t& header, void* body_buf, uint32_t body_buf_len, FILE* protobuf_fp) = 0;
+    virtual ~pb_file_reader();
+    virtual error_t read_record(header_t& header, void* body_buf, uint32_t body_buf_len, FILE* fp) = 0;
 protected:
-    virtual error_t read_header(header_t& header, FILE* protobuf_fp);
-    virtual error_t read_basic_header(header_t& header, FILE* protobuf_fp);
-    virtual error_t read_extend_segments(header_t& header, FILE* protobuf_fp);
-    virtual error_t read_body(const header_t& header, void* body_buf, uint32_t body_buf_len, FILE* protobuf_fp);
+    virtual error_t read_header(header_t& header, FILE* fp);
+    virtual error_t read_basic_header(header_t& header, FILE* fp);
+    virtual error_t read_extend_segments(header_t& header, FILE* fp);
+    virtual error_t read_body(const header_t& header, void* body_buf, uint32_t body_buf_len, FILE* fp);
     int64_t magic_number_pos() const;
 private:
     int64_t _magic_pos;

@@ -1,8 +1,6 @@
-
+//solopointer1202@gmail.com
 #include <string.h>
 #include <new>
-#include "pack_header.h"
-#include "pb_buffer_reader.h"
 #include "checksum.h"
 #include "log.h"
 
@@ -28,23 +26,20 @@ int pb_buffer_reader<header_t>::read_init() {
 
 template<typename header_t>
 error_t pb_buffer_reader<header_t>::read_header(
-        header_t& header,
-        const char* buffer,
-        uint32_t buffer_len) {
+    header_t& header, const char* buffer, uint32_t buffer_len) {
     if (buffer == nullptr) {
         FATAL("Parameter invalid[%p].", buffer);
         return error_t::ERROR;
     }
 
     _magic_pos = _current_buf_position;
-    uint32_t magic_number_len = sizeof(MAGIC_NUMBER);
 
     if (_current_buf_position == buffer_len) {
         DEBUG("Reach EOF.", "");
         return error_t::REACH_EOF;
-    } else if (_current_buf_position + magic_number_len > buffer_len) {
+    } else if (_current_buf_position + sizeof(typename header_t::magic_t) > buffer_len) {
         FATAL("Reach end [%u][%u][%u].",
-                buffer_len - _current_buf_position, magic_number_len, _magic_pos);
+                buffer_len - _current_buf_position, sizeof(typename header_t::magic_t), _magic_pos);
         return error_t::DATA_INCOMPLETE;
     } else {
         //DEBUG("read header[%u].", _magic_pos);
@@ -52,22 +47,22 @@ error_t pb_buffer_reader<header_t>::read_header(
 
     const char* header_pos = buffer + _current_buf_position;
     const header_t& read_header = *((const header_t*)header_pos); 
-    _current_buf_position += magic_number_len;
+    _current_buf_position += sizeof(typename header_t::magic_t);
 
     uint16_t magic_number = read_header.magic_number;
-    if (magic_number != MAGIC_NUMBER) {
+    if (magic_number != header_t::MAGIC_NUMBER) {
         if (_last_magic_check) {
             FATAL("magic number != MAGIC NUMBER [%x][%x][%u].",
-                magic_number, MAGIC_NUMBER, _magic_pos);
+                magic_number, header_t::MAGIC_NUMBER, _magic_pos);
             _last_magic_check = false;
         }
         return error_t::MAGIC_ERROR;
     }
     _last_magic_check = true;
 
-    uint32_t remain_len = BASE_HEADER_LENGTH - magic_number_len;
+    uint32_t remain_len = header_t::BASE_HEADER_LENGTH - sizeof(typename header_t::magic_t);
     if (_current_buf_position + remain_len <= buffer_len) {
-        memcpy((char*)&header, header_pos, BASE_HEADER_LENGTH);
+        memcpy((char*)&header, header_pos, header_t::BASE_HEADER_LENGTH);
         _current_buf_position += remain_len;
     } else {
         FATAL("reach EOF [%u][%u].",
@@ -76,9 +71,9 @@ error_t pb_buffer_reader<header_t>::read_header(
     }
 
     if (read_header.extend == 1) {
-        remain_len = EXTEND_HEADER_LENGTH - BASE_HEADER_LENGTH;
+        remain_len = sizeof(header_t) - header_t::BASE_HEADER_LENGTH;
         if (_current_buf_position + remain_len <= buffer_len) {
-            memcpy((char*)&header + BASE_HEADER_LENGTH, buffer + _current_buf_position, remain_len);
+            memcpy((char*)&header + header_t::BASE_HEADER_LENGTH, buffer + _current_buf_position, remain_len);
             _current_buf_position += remain_len;
         } else {
             FATAL("Reach EOF [%u][%u].",
@@ -137,7 +132,7 @@ error_t pb_buffer_reader<header_t>::read_record(
     while (true) {
         read_status = read_header(header, buffer, buffer_len);
         if (read_status == error_t::SUCCESS) {
-            DEBUG("read header[%u].", _magic_pos);
+            DEBUG("Invoke read_header successfully [%u].", _magic_pos);
         } else if (read_status == error_t::REACH_EOF) {
             return error_t::REACH_EOF;
         } else if (read_status == error_t::MAGIC_ERROR
@@ -145,20 +140,20 @@ error_t pb_buffer_reader<header_t>::read_record(
             _current_buf_position = _magic_pos + 1;
             continue;
         } else {
-            FATAL("failed to read header.", "");
+            FATAL("Failed to read_header.", "");
             return error_t::ERROR;
         }
 
         read_status = read_body(header, body_buf, buffer, buffer_len);
         if (read_status == error_t::SUCCESS) {
-            DEBUG("read header[%u].", _magic_pos);
+            DEBUG("Invoke read_body successfully [%u].", _magic_pos);
             break;
         } else if (read_status == error_t::NEED_CONTINUE
                 || read_status == error_t::CHECK_ERROR) {
             _current_buf_position = _magic_pos + 1;
             continue;
         } else {
-            FATAL("failed to read body.", "");
+            FATAL("Failed to read_body.", "");
             return error_t::ERROR;
         }
     }

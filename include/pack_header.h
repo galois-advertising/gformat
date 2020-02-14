@@ -9,7 +9,10 @@ namespace galois::format {
 const uint16_t MAGIC_NUMBER = 0xf83f;
 // no virtual method
 struct pack_header_t {
-    uint16_t magic_number;
+    static const uint16_t MAGIC_NUMBER = 0xf83f;
+    static const uint16_t BASE_HEADER_LENGTH = 12;
+    typedef uint16_t magic_t;
+    magic_t magic_number;
     uint16_t checksum;
 
     uint32_t pack_len;
@@ -46,7 +49,6 @@ struct pack_header_t {
 };
 
 const uint16_t BASE_HEADER_LENGTH = 12;
-const uint16_t EXTEND_HEADER_LENGTH = sizeof(pack_header_t);
 
 uint16_t get_header_len(const pack_header_t& header);
 error_t write_header(const pack_header_t& header, char* buffer, uint32_t buffer_len);

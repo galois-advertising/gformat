@@ -1,3 +1,4 @@
+//solopointer1202@gmail.com
 #pragma once
 #include <stdint.h>
 #include "pb_file_reader.h"
@@ -10,7 +11,7 @@ public:
     pb_fixed_file_reader();
     virtual ~pb_fixed_file_reader();
     virtual error_t read_record(header_t& header, void* body_buf, 
-        uint32_t body_buf_len, FILE* protobuf_fp);
+        uint32_t body_buf_len, FILE* fp);
 };
 
 }  
