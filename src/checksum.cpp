@@ -1,7 +1,7 @@
 #include "checksum.h"
 #include "log.h"
 
-namespace galois::format {
+namespace galois::gformat {
 
 int checksum(const void* key, int length, uint16_t& check_sum) {
     if (key == nullptr) {

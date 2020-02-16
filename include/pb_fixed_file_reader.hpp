@@ -6,7 +6,7 @@
 #include "checksum.h"
 #include "log.h"
 
-namespace galois::format {
+namespace galois::gformat {
 
 template<typename header_t>
 pb_fixed_file_reader<header_t>::pb_fixed_file_reader() {}

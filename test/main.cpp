@@ -6,7 +6,7 @@
 #include "pb_buffer_reader.h"
 #include "pb_fixed_file_reader.h"
 
-using namespace galois::format;
+using namespace galois::gformat;
 
 int test_read_buffer(std::string infile_name, std::string outfile_name)
 {

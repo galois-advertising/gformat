@@ -2,7 +2,7 @@
 #pragma once
 #include "format.h"
 
-namespace galois::format {
+namespace galois::gformat {
 
 template<typename header_t>
 class pb_buffer_reader {

@@ -3,7 +3,7 @@
 #include <new>
 #include "log.h"
 
-namespace galois::format {
+namespace galois::gformat {
 
 template<typename header_t>
 pb_writable_file_reader<header_t>::pb_writable_file_reader() {

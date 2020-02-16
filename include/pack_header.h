@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include "format.h"
 
-namespace galois::format {
+namespace galois::gformat {
 
 // no virtual method
 struct pack_header_t {

@@ -4,7 +4,7 @@
 #include "checksum.h"
 #include "log.h"
 
-namespace galois::format {
+namespace galois::gformat {
 
 template<typename header_t>
 pb_buffer_reader<header_t>::pb_buffer_reader() :

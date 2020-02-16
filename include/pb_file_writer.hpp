@@ -2,7 +2,7 @@
 #include "checksum.h"
 #include "log.h"
 
-namespace galois::format {
+namespace galois::gformat {
 
 template<typename header_t>
 pb_file_writer<header_t>::pb_file_writer() {}

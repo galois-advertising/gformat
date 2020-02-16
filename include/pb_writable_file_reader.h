@@ -3,7 +3,7 @@
 #include <stdint.h>
 #include "pb_file_reader.h"
 
-namespace galois::format {
+namespace galois::gformat {
 
 template<typename header_t>
 class pb_writable_file_reader : public pb_file_reader<header_t> {

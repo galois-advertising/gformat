@@ -3,7 +3,7 @@
 #include "pack_header.h"
 #include "log.h"
 
-namespace galois::format {
+namespace galois::gformat {
 
 uint16_t get_header_len(const pack_header_t& header) {
     return header.extend == 0 ? pack_header_t::BASE_HEADER_LENGTH : sizeof(pack_header_t);
