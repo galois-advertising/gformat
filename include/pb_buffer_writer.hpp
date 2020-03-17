@@ -48,7 +48,7 @@ error_t pb_buffer_writer<header_t>::write_record(
     char* start_pos = buffer + _current_buf_position;
     if (header.extend == 0) {
         if (_current_buf_position + header_t::BASE_HEADER_LENGTH + body_len > buffer_len) {
-            DEBUG("cur buf pos [%u] + base header len [%u] + body len [%u] > buf len [%d].",
+            TRACE("cur buf pos [%u] + base header len [%u] + body len [%u] > buf len [%d].",
                 _current_buf_position, header_t::BASE_HEADER_LENGTH,
                 body_len, buffer_len);
             return error_t::BUFFER_TOO_SMALL;
@@ -58,7 +58,7 @@ error_t pb_buffer_writer<header_t>::write_record(
         _current_buf_position += header_t::BASE_HEADER_LENGTH + body_len;
     } else {
         if (_current_buf_position + sizeof(header_t) + body_len > buffer_len) {
-            DEBUG("cur buf pos [%u] + extend header len [%u] + body len [%u] > buf len [%d].",
+            TRACE("cur buf pos [%u] + extend header len [%u] + body len [%u] > buf len [%d].",
                 _current_buf_position, sizeof(header_t),
                 body_len, buffer_len);
             return error_t::BUFFER_TOO_SMALL;

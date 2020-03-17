@@ -35,14 +35,14 @@ error_t pb_buffer_reader<header_t>::read_header(
     _magic_pos = _current_buf_position;
 
     if (_current_buf_position == buffer_len) {
-        DEBUG("Reach EOF.", "");
+        TRACE("Reach EOF.", "");
         return error_t::REACH_EOF;
     } else if (_current_buf_position + sizeof(typename header_t::magic_t) > buffer_len) {
         FATAL("Reach end [%u][%u][%u].",
                 buffer_len - _current_buf_position, sizeof(typename header_t::magic_t), _magic_pos);
         return error_t::DATA_INCOMPLETE;
     } else {
-        //DEBUG("read header[%u].", _magic_pos);
+        //TRACE("read header[%u].", _magic_pos);
     }
 
     const char* header_pos = buffer + _current_buf_position;
@@ -132,7 +132,7 @@ error_t pb_buffer_reader<header_t>::read_record(
     while (true) {
         read_status = read_header(header, buffer, buffer_len);
         if (read_status == error_t::SUCCESS) {
-            DEBUG("Invoke read_header successfully [%u].", _magic_pos);
+            TRACE("Invoke read_header successfully [%u].", _magic_pos);
         } else if (read_status == error_t::REACH_EOF) {
             return error_t::REACH_EOF;
         } else if (read_status == error_t::MAGIC_ERROR
@@ -146,7 +146,7 @@ error_t pb_buffer_reader<header_t>::read_record(
 
         read_status = read_body(header, body_buf, buffer, buffer_len);
         if (read_status == error_t::SUCCESS) {
-            DEBUG("Invoke read_body successfully [%u].", _magic_pos);
+            TRACE("Invoke read_body successfully [%u].", _magic_pos);
             break;
         } else if (read_status == error_t::NEED_CONTINUE
                 || read_status == error_t::CHECK_ERROR) {
@@ -174,7 +174,7 @@ error_t pb_buffer_reader<header_t>::read_record_strong(
     while (true) {
         read_status = read_header(header, buffer, buffer_len);
         if (read_status == error_t::SUCCESS) {
-            DEBUG("read header[%u].", _magic_pos);
+            TRACE("read header[%u].", _magic_pos);
         } else if (read_status == error_t::REACH_EOF) {
             return error_t::REACH_EOF;
         } else if (read_status == error_t::MAGIC_ERROR
@@ -188,7 +188,7 @@ error_t pb_buffer_reader<header_t>::read_record_strong(
 
         read_status = read_body(header, body_buf, buffer, buffer_len);
         if (read_status == error_t::SUCCESS) {
-            DEBUG("read header[%u].", _magic_pos);
+            TRACE("read header[%u].", _magic_pos);
             break;
         } else if (read_status == error_t::NEED_CONTINUE
                 || read_status == error_t::CHECK_ERROR) {

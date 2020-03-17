@@ -55,11 +55,11 @@ error_t pb_file_reader<header_t>::read_basic_header(header_t& header, FILE* fp) 
         
         if (feof(fp) != 0) {
             if (read_len > 0) {
-                DEBUG("Reach EOF [%u][%u][%ld].",
+                TRACE("Reach EOF [%u][%u][%ld].",
                     read_len, sizeof(typename header_t::magic_t), _magic_pos);
                 return error_t::DATA_INCOMPLETE;
             }
-            DEBUG("Reach EOF.", "");
+            TRACE("Reach EOF.", "");
             return error_t::REACH_EOF;
         }
         FATAL("Something fails [%ld].", _magic_pos);
@@ -84,7 +84,7 @@ error_t pb_file_reader<header_t>::read_basic_header(header_t& header, FILE* fp) 
         }
         
         if (feof(fp) != 0) {
-            DEBUG("Reach EOF when read base header[%d][%ld].", read_len, _magic_pos);
+            TRACE("Reach EOF when read base header[%d][%ld].", read_len, _magic_pos);
             return error_t::DATA_INCOMPLETE;
         }
         FATAL("unkown error [%ld].", _magic_pos);
@@ -114,7 +114,7 @@ error_t pb_file_reader<header_t>::read_extend_segments(
             return error_t::ERROR;
         }
         if (feof(fp) != 0) {
-            DEBUG("reach eof when read extend[%d][%ld].", read_len, _magic_pos);
+            TRACE("reach eof when read extend[%d][%ld].", read_len, _magic_pos);
             return  error_t::DATA_INCOMPLETE;
         }
         FATAL("unkown error [%ld].", _magic_pos);
@@ -152,7 +152,7 @@ error_t pb_file_reader<header_t>::read_body(
             return error_t::ERROR;
         }
         if (feof(fp) != 0) {
-            DEBUG("reach eof when read body[%d][%ld].", read_len, _magic_pos);
+            TRACE("reach eof when read body[%d][%ld].", read_len, _magic_pos);
             return error_t::DATA_INCOMPLETE;
         }
         FATAL("unkown error[%ld].", _magic_pos);
