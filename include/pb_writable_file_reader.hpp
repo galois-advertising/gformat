@@ -35,7 +35,7 @@ error_t pb_writable_file_reader<header_t>::read_record(
             }
             continue;
         } else if (read_status == error_t::SUCCESS) {
-            DEBUG("Read header [%ld].", this->magic_number_pos());
+            TRACE("Read header [%ld].", this->magic_number_pos());
         } else {
             FATAL("Failed to read header.", "");
             return error_t::ERROR;
@@ -43,7 +43,7 @@ error_t pb_writable_file_reader<header_t>::read_record(
 
         read_status = this->read_body(header, body_buf, body_buf_len, fp);
         if (read_status == error_t::SUCCESS) {
-            DEBUG("Read header[%ld].", this->magic_number_pos());
+            TRACE("Read header[%ld].", this->magic_number_pos());
             break;
         } else if (read_status == error_t::DATA_INCOMPLETE) {
             return read_status;

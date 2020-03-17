@@ -34,14 +34,14 @@ error_t pb_fixed_file_reader<header_t>::read_record(
             }
             continue;
         } else if (status == error_t::SUCCESS) {
-            DEBUG("Invoke read_header successfully[%ld].", this->magic_number_pos());
+            TRACE("Invoke read_header successfully[%ld].", this->magic_number_pos());
         } else {
             FATAL("Failed to read_header.", "");
             return error_t::ERROR;
         }
         status = this->read_body(header, body_buf, body_buf_len, fp);
         if (status == error_t::SUCCESS) {
-            DEBUG("Invoke read_body successfully [%ld].", this->magic_number_pos());
+            TRACE("Invoke read_body successfully [%ld].", this->magic_number_pos());
             break;
         } else if (status == error_t::CHECK_ERROR
                 || status == error_t::RECORD_TOO_BIG
