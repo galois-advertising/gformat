@@ -23,18 +23,23 @@ set(CMAKE_CXX_FLAGS_DEBUG "$ENV{CXXFLAGS} -O0 -Wall -g -ggdb -std=c++17 -fno-str
 set(CMAKE_CXX_FLAGS_RELEASE "$ENV{CXXFLAGS} -O3 -Wall -std=c++17 -fno-strict-aliasing -Wno-register")
 set(CMAKE_BUILD_TYPE "Release")
 
-include_directories("${PROJECT_SOURCE_DIR}/common/util/include")
-include_directories("${PROJECT_SOURCE_DIR}/common/include")
+include_directories("${CMAKE_SOURCE_DIR}/common/util/include")
 include_directories("${PROJECT_SOURCE_DIR}/include")
 include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 
+ADD_SUBDIRECTORY(common)
+
 
 set(SRCS
-"${PROJECT_SOURCE_DIR}/test/main.cpp" 
 "${PROJECT_SOURCE_DIR}/src/checksum.cpp" 
 "${PROJECT_SOURCE_DIR}/src/pack_header.cpp" 
-"${PROJECT_SOURCE_DIR}/common/util/src/log.cpp"
 )
 
-add_executable(gformat_test ${SRCS})
-target_link_libraries(gformat_test boost_log-mt)
+set(TEST_SRCS
+"${PROJECT_SOURCE_DIR}/test/main.cpp" 
+)
+
+add_library(gformat STATIC ${SRCS})
+
+add_executable(gformat_test ${TEST_SRCS})
+target_link_libraries(gformat_test gformat common boost_log-mt)
