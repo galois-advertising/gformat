@@ -1,45 +1,47 @@
-project(gformat)
-cmake_minimum_required(VERSION 2.8)
+PROJECT(gformat)
+CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 
-find_package(Boost REQUIRED COMPONENTS log)
-if(NOT Boost_FOUND)
-    message("Can not find Boost")
-endif()
-message(STATUS "Found Boost IncPath ${Boost_INCLUDE_DIRS}")
-message(STATUS "Found Boost LibPath ${Boost_LIBRARY_DIRS}")
-message(STATUS "Found Boost LIBRARIES ${Boost_LIBRARIES}")
+FIND_PACKAGE(Boost REQUIRED COMPONENTS log)
+IF(NOT Boost_FOUND)
+    MESSAGE("Can not find Boost")
+ENDIF()
+MESSAGE(STATUS "Found Boost IncPath ${Boost_INCLUDE_DIRS}")
+MESSAGE(STATUS "Found Boost LibPath ${Boost_LIBRARY_DIRS}")
+MESSAGE(STATUS "Found Boost LIBRARIES ${Boost_LIBRARIES}")
 
-add_definitions(-DBOOST_SPIRIT_THREADSAFE)
-add_definitions(-DBOOST_ALL_DYN_LINK)
-add_definitions(-D_DEBUG)
+ADD_DEFINITIONS(-DBOOST_SPIRIT_THREADSAFE)
+ADD_DEFINITIONS(-DBOOST_ALL_DYN_LINK)
+ADD_DEFINITIONS(-D_DEBUG)
 
-include_directories(${Boost_INCLUDE_DIRS})
-include_directories(${PROJECT_SOURCE_DIR})
-link_directories(${Boost_LIBRARY_DIRS})
+INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
+INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR})
+LINK_DIRECTORIES(${Boost_LIBRARY_DIRS})
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
-set(CMAKE_CXX_FLAGS_DEBUG "$ENV{CXXFLAGS} -O0 -Wall -g -ggdb -std=c++17 -fno-strict-aliasing -Wno-register")
-set(CMAKE_CXX_FLAGS_RELEASE "$ENV{CXXFLAGS} -O3 -Wall -std=c++17 -fno-strict-aliasing -Wno-register")
-set(CMAKE_BUILD_TYPE "Release")
+SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g")
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
+SET(CMAKE_CXX_FLAGS_DEBUG "$ENV{CXXFLAGS} -O0 -Wall -g -ggdb -std=c++17 -fno-strict-aliasing -Wno-register")
+SET(CMAKE_CXX_FLAGS_RELEASE "$ENV{CXXFLAGS} -O3 -Wall -std=c++17 -fno-strict-aliasing -Wno-register")
+SET(CMAKE_BUILD_TYPE "Release")
 
-include_directories("${CMAKE_SOURCE_DIR}/common/util/include")
-include_directories("${PROJECT_SOURCE_DIR}/include")
-include_directories("${CMAKE_CURRENT_BINARY_DIR}")
+INCLUDE_DIRECTORIES("${CMAKE_SOURCE_DIR}/common/util/include")
+INCLUDE_DIRECTORIES("${PROJECT_SOURCE_DIR}/include")
+INCLUDE_DIRECTORIES("${CMAKE_CURRENT_BINARY_DIR}")
 
-ADD_SUBDIRECTORY(common)
+IF(NOT DEFINED IGNORE_COMMON)
+    ADD_SUBDIRECTORY(common)
+ENDIF(NOT DEFINED IGNORE_COMMON)
 
 
-set(SRCS
+SET(SRCS
 "${PROJECT_SOURCE_DIR}/src/checksum.cpp" 
 "${PROJECT_SOURCE_DIR}/src/pack_header.cpp" 
 )
 
-set(TEST_SRCS
+SET(TEST_SRCS
 "${PROJECT_SOURCE_DIR}/test/main.cpp" 
 )
 
-add_library(gformat STATIC ${SRCS})
+ADD_LIBRARY(gformat STATIC ${SRCS})
 
-add_executable(gformat_test ${TEST_SRCS})
-target_link_libraries(gformat_test gformat common boost_log-mt)
+ADD_EXECUTABLE(gformat_test ${TEST_SRCS})
+TARGET_LINK_LIBRARIES(gformat_test gformat common boost_log-mt)

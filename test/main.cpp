@@ -90,7 +90,6 @@ int test_read_file(std::string infile_name, std::string outfile_name)
     pb_fixed_file_reader<pack_header_t> protobuf_reader;
     pack_header_t header;
 
-    char* body_pos = nullptr;
     int ret = 0;
     while (1) {
         auto rc = protobuf_reader.read_record(header, buffer.get(), BUF_SIZE, infile.get());
